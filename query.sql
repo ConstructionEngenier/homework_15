@@ -152,19 +152,38 @@ FROM animals
 WHERE color1 NOT NULL
 ORDER BY color1;
 
+INSERT INTO colors(name)
+SELECT DISTINCT color2
+FROM animals
+AS color
+WHERE NOT EXISTS (SELECT
+name FROM colors WHERE
+name=color.color2)
+AND color2 NOT NULL;
+
 CREATE TABLE animal_color
 (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     animal_id INTEGER NOT NULL,
-    color_id INTEGER NOT NULL,
+    color1_id INTEGER NOT NULL,
+    color2_id INTEGER,
     FOREIGN KEY(animal_id) REFERENCES animal_normal(id) ON DELETE CASCADE,
-    FOREIGN KEY(color_id) REFERENCES colors(id) ON DELETE RESTRICT
+    FOREIGN KEY(color1_id) REFERENCES colors(id) ON DELETE RESTRICT,
+    FOREIGN KEY(color2_id) REFERENCES colors(id) ON DELETE RESTRICT
 );
 
-INSERT INTO animal_color(animal_id, color_id)
+INSERT INTO animal_color(animal_id, color1_id)
 SELECT DISTINCT animals."index", colors.id
 FROM animals
 LEFT JOIN colors on animals.color1 = colors.name;
+
+UPDATE animal_color
+SET color2_id = (
+    SELECT DISTINCT id
+    FROM colors
+    LEFT JOIN animals on colors.name = animals.color2
+    WHERE animals."index" = animal_color.animal_id
+    );
 
 INSERT INTO subtype(name)
 SELECT DISTINCT outcome_subtype
