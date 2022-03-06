@@ -13,7 +13,8 @@ def get_item_by_id(itemid, data_base):
                animal_type.name,
                name.name,
                breeds.name,
-               colors.name,
+               color1.name,
+               color2.name,
                animal_normal.date_of_birth,
                subtype.name,
                type.name,
@@ -25,7 +26,8 @@ def get_item_by_id(itemid, data_base):
         JOIN animal_breed ON animal_breed.id = animal_normal.id
         LEFT JOIN breeds ON breeds.id = animal_breed.breed_id
         JOIN animal_color ON animal_color.id = animal_normal.id
-        LEFT JOIN colors ON colors.id = animal_color.color_id
+        LEFT JOIN colors color1 on color1.id=animal_color.color1_id
+        LEFT JOIN colors color2 on color2.id=animal_color.color2_id
         LEFT JOIN subtype ON animal_normal.subtype_id = subtype.id
         LEFT JOIN type ON animal_normal.type_id = type.id
         LEFT JOIN month ON animal_normal.month_id = month.id
