@@ -10,19 +10,13 @@ CREATE TABLE name
     name VARCHAR(100) NOT NULl
 );
 
-CREATE TABLE breed
+CREATE TABLE breeds
 (
     id   INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE color1
-(
-    id   INTEGER PRIMARY KEY AUTOINCREMENT,
-    name VARCHAR(100) NOT NULL
-);
-
-CREATE TABLE color2
+CREATE TABLE IF NOT EXISTS colors
 (
     id   INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(100) NOT NULL
@@ -59,9 +53,6 @@ CREATE TABLE animal_normal
     animal_id VARCHAR(100),
     animal_type_id INTEGER,
     name_id INTEGER,
-    breed_id INTEGER,
-    color1_id INTEGER,
-    color2_id INTEGER,
     date_of_birth DATETIME,
     subtype_id INTEGER,
     type_id INTEGER,
@@ -69,9 +60,6 @@ CREATE TABLE animal_normal
     year_id INTEGER,
     FOREIGN KEY(animal_type_id) REFERENCES animal_type(id),
     FOREIGN KEY(name_id) REFERENCES name(id),
-    FOREIGN KEY(breed_id) REFERENCES breed(id),
-    FOREIGN KEY(color1_id) REFERENCES color1(id),
-    FOREIGN KEY(color2_id) REFERENCES color2(id),
     FOREIGN KEY(subtype_id) REFERENCES subtype(id),
     FOREIGN KEY(type_id) REFERENCES type(id),
     FOREIGN KEY(month_id) REFERENCES month(id),
@@ -137,86 +125,46 @@ SET name_id = (
 
 DROP TABLE animals_to_name;
 
-INSERT INTO breed(name)
+INSERT INTO breeds(name)
 SELECT DISTINCT breed
 FROM animals
 WHERE breed NOT NULL
 ORDER BY breed;
 
-CREATE TABLE animals_to_breed
+CREATE TABLE animal_breed
 (
-    id   INTEGER PRIMARY KEY AUTOINCREMENT,
-    animal_index INTEGER,
-    breed_id INTEGER
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    animal_id INTEGER NOT NULL,
+    breed_id INTEGER NOT NULL,
+    FOREIGN KEY(animal_id) REFERENCES animal_normal(id) ON DELETE CASCADE,
+    FOREIGN KEY(breed_id) REFERENCES breeds(id) ON DELETE RESTRICT
 );
 
-INSERT INTO animals_to_breed(animal_index, breed_id)
-SELECT DISTINCT animals."index", breed.id
+INSERT INTO animal_breed(animal_id, breed_id)
+SELECT DISTINCT animals."index", breeds.id
 FROM animals
-LEFT JOIN breed on animals.breed = breed.name;
+LEFT JOIN breeds on animals.breed = breeds.name;
 
-UPDATE animal_normal
-SET breed_id = (
-    SELECT animals_to_breed.breed_id
-    FROM animals_to_breed
-    WHERE animals_to_breed.id = animal_normal.id
-    );
 
-DROP TABLE animals_to_breed;
-
-INSERT INTO color1(name)
+INSERT INTO colors(name)
 SELECT DISTINCT color1
 FROM animals
 WHERE color1 NOT NULL
 ORDER BY color1;
 
-CREATE TABLE animals_to_color1
+CREATE TABLE animal_color
 (
-    id   INTEGER PRIMARY KEY AUTOINCREMENT,
-    animal_index INTEGER,
-    color1_id INTEGER
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    animal_id INTEGER NOT NULL,
+    color_id INTEGER NOT NULL,
+    FOREIGN KEY(animal_id) REFERENCES animal_normal(id) ON DELETE CASCADE,
+    FOREIGN KEY(color_id) REFERENCES colors(id) ON DELETE RESTRICT
 );
 
-INSERT INTO animals_to_color1(animal_index, color1_id)
-SELECT DISTINCT animals."index", color1.id
+INSERT INTO animal_color(animal_id, color_id)
+SELECT DISTINCT animals."index", colors.id
 FROM animals
-LEFT JOIN color1 on animals.color1 = color1.name;
-
-UPDATE animal_normal
-SET color1_id = (
-    SELECT animals_to_color1.color1_id
-    FROM animals_to_color1
-    WHERE animals_to_color1.id = animal_normal.id
-    );
-
-DROP TABLE animals_to_color1;
-
-INSERT INTO color2(name)
-SELECT DISTINCT color2
-FROM animals
-WHERE color2 NOT NULL
-ORDER BY color2;
-
-CREATE TABLE animals_to_color2
-(
-    id   INTEGER PRIMARY KEY AUTOINCREMENT,
-    animal_index INTEGER,
-    color2_id INTEGER
-);
-
-INSERT INTO animals_to_color2(animal_index, color2_id)
-SELECT DISTINCT animals."index", color2.id
-FROM animals
-LEFT JOIN color2 on animals.color2 = color2.name;
-
-UPDATE animal_normal
-SET color2_id = (
-    SELECT animals_to_color2.color2_id
-    FROM animals_to_color2
-    WHERE animals_to_color2.id = animal_normal.id
-    );
-
-DROP TABLE animals_to_color2;
+LEFT JOIN colors on animals.color1 = colors.name;
 
 INSERT INTO subtype(name)
 SELECT DISTINCT outcome_subtype
